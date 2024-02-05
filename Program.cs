@@ -1,41 +1,45 @@
 ﻿using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.VisualBasic;
 
 namespace HelloWorld;
 
 class Program
 {
-    private const string DOCPATHKEY = "CENTSATIONAL_INPUT_PATH";
+    private const string DATA_FILEPATH_KEY = "CENTSATIONAL_INPUT_PATH";
 
-    private static string DOCPATHKEY2 = "CENTSATIONAL_CONFIG_PATH";
+    private static string CONFIG_FILEPATH_KEY = "CENTSATIONAL_CONFIG_PATH";
+
 
     static void Main(string[] args)
     {
+        var _transactions = new List<Transaction>();
+
         Console.WriteLine("Hello, World!");
-        string document_path = Environment.GetEnvironmentVariable(DOCPATHKEY);
-        string config_path = Environment.GetEnvironmentVariable(DOCPATHKEY2);
-        
-        if(string.IsNullOrEmpty(document_path))
+        string? data_path = Environment.GetEnvironmentVariable(DATA_FILEPATH_KEY);
+        string? config_path = Environment.GetEnvironmentVariable(CONFIG_FILEPATH_KEY);
+
+        if (string.IsNullOrEmpty(data_path))
         {
             Console.WriteLine("Please provide the path to the directory from where toread your Document.");
-            document_path = Console.ReadLine();
+            data_path = Console.ReadLine();
         }
-        
-        if(string.IsNullOrEmpty(config_path))
+
+        if (string.IsNullOrEmpty(config_path))
         {
             Console.WriteLine("Please provide the path to the directory where your Configuration resides.");
             config_path = Console.ReadLine();
         }
 
-        if(string.IsNullOrEmpty(document_path)) return;
-        if(string.IsNullOrEmpty(config_path)) return;
+        if (string.IsNullOrEmpty(data_path)) return;
+        if (string.IsNullOrEmpty(config_path)) return;
 
         var configfilename = Path.GetFileName(config_path);
         Config? config = null;
-        if(!string.IsNullOrEmpty(configfilename))
+        if (!string.IsNullOrEmpty(configfilename))
         {
-             config = new Config().FromPath(configfilename);
+            config = new Config().FromPath(configfilename);
         }
         else
         {
@@ -44,50 +48,66 @@ class Program
             // or maybe use some Default configuration?
         }
 
-        if(config == null)
+        if (config == null)
         {
             Console.WriteLine("No configuraiton provided. exit.");
             return;
         }
-        if(!config.Validate())
+        if (!config.Validate())
         {
             Console.Write("Configuration data is invalid. exit.");
             return;
         }
 
-        var dataFileName = Path.GetFileName(document_path);
+        var dataFileName = Path.GetFileName(data_path);
 
         var lines = File.ReadLines(dataFileName);
         int currentline = 0;
-        foreach(string line in lines)
+        foreach (string line in lines)
         {
             currentline++;
-            if(currentline == 1)
+            if (currentline == 1)
             {
                 var columnnames = line.Split(';');
                 var columnIndex = 0;
 
-                foreach(string columnname in columnnames)
+                foreach (string columnname in columnnames)
                 {
                     DataMapping dataMapping;
-                    if(config.Datamappings.TryGetValue(columnname, out dataMapping))
+                    if (config.Datamappings.TryGetValue(columnname, out dataMapping))
                     {
                         dataMapping.ColumnIndex = columnIndex;
+                        config.Datamappings[columnname] = dataMapping;
                     }
 
-                    
+
                     columnIndex++;
                 }
 
                 continue;
             }
+            else
+            {
+                var transaction = new Transaction();
+                var transactionData = line.Split(';');
+                transaction.Date = DateTime.Parse(transactionData[config.Datamappings["date"].ColumnIndex]);
+                transaction.Value = decimal.Parse(transactionData[config.Datamappings["value"].ColumnIndex]);
+                transaction.Subject = (string) transactionData[config.Datamappings["subject"].ColumnIndex];
+                transaction.Receiver = (string) transactionData[config.Datamappings["receiver"].ColumnIndex];
+                transaction.Description = (string) transactionData[config.Datamappings["description"].ColumnIndex];
 
-            var splits = line.Split(';');
+                
+                _transactions.Add(transaction);
+            }
         }
+
+        Console.WriteLine("Transactions: ");
+        _transactions.ForEach(t => Console.WriteLine(t.ToString()));
+
 
     }
 
-    public class Config 
+    public class Config
     {
         //
         // Path to Configfile 
@@ -109,7 +129,7 @@ class Program
         // datamapping | Value | ValueColumn
         public IDictionary<string, DataMapping> Datamappings;
         //
-        // Value Mappings
+        // Value Mappings (Value Rules?)
         // Each Transaction is being sorted into one Category by Keyword Matching
         // Matchings have to be provided within the configfile in the following form: 
         // Category | Keyword | Operation
@@ -117,8 +137,8 @@ class Program
         // valuemapping | Staple Foods | Kölsch | Contains
 
         public List<ValueMapping> ValueMappings; // @todo better naming ?!
-        
-        public Config(){}
+
+        public Config() { }
         public Config(string path)
         {
             ConfigfilePath = path;
@@ -129,9 +149,9 @@ class Program
 
         public bool Validate()
         {
-            return !string.IsNullOrEmpty(ConfigfilePath) && 
+            return !string.IsNullOrEmpty(ConfigfilePath) &&
                     Datafilenames.Any() &&
-                    Datamappings.Any() && 
+                    Datamappings.Any() &&
                     ValueMappings.Any();
         }
 
@@ -141,24 +161,24 @@ class Program
 
             var lines = File.ReadLines(path);
             int currentline = 0;
-            foreach(string line in lines)
+            foreach (string line in lines)
             {
                 var splits = line.Split(';');
                 var linetopic = splits[0].ToLower();
 
-                if(linetopic.Equals("datafilenames"))
+                if (linetopic.Equals("datafilenames"))
                 {
                     c.Datafilenames = splits[1].Split(',').ToList();
                     continue;
                 }
-                else if(linetopic.Equals("datamapping"))
+                else if (linetopic.Equals("datamapping"))
                 {
                     string property = splits[1];
                     string column = splits[2];
 
                     Datamappings.Add(column, new DataMapping(property, column));
                 }
-                else if(linetopic.Equals("valuemapping"))
+                else if (linetopic.Equals("valuemapping"))
                 {
                     string category = splits[1];
                     string keyword = splits[2];
@@ -166,7 +186,7 @@ class Program
 
                     ValueMappings.Add(new ValueMapping(category, keyword, operation));
                 }
-                
+
                 currentline++;
             }
 
@@ -176,11 +196,16 @@ class Program
 
     public class Transaction
     {
-        public DateAndTime Date;
+        public DateTime Date;
         public string Receiver;
         public string Subject;
         public string Description;
         public Decimal Value;
+
+        public override string ToString()
+        {
+            return string.Format("Date: {0}, Value: {1}, Receiver: {2}, Subject: {3}, Description: {4}", Date, Value, Receiver, Subject, Description); 
+        }
 
     }
 
@@ -215,6 +240,6 @@ class Program
             Operation = operation;
         }
     }
-} 
+}
 
 
