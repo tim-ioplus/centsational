@@ -104,6 +104,43 @@ class Program
         Console.WriteLine("Transactions: ");
         _transactions.ForEach(t => Console.WriteLine(t.ToString()));
 
+        Console.WriteLine("Sorting with value mappings: ");
+        var mappedTransactions = new Dictionary<string, List<Transaction>>();
+
+        foreach(var transaction in _transactions)
+        {
+            var matchedMapping = config.ValueMappings.FirstOrDefault(m => transaction.ToString().Contains(m.Keyword));
+            if(matchedMapping == null) continue;
+            
+            if(!mappedTransactions.ContainsKey(matchedMapping.Category))
+            {
+                mappedTransactions.Add(matchedMapping.Category, new List<Transaction>());
+            }
+
+            var categorieList = mappedTransactions.GetValueOrDefault(matchedMapping.Category);
+            if(categorieList != null)
+            {
+                categorieList.Add(transaction);
+            }
+        }
+
+        Console.WriteLine("Sorted with value Mappings:");
+
+        foreach(var account in mappedTransactions)
+        {
+            Console.WriteLine("Transactions for " + account.Key + " :");
+            decimal accountSum = new decimal(0);
+            var accountTransactions = mappedTransactions[account.Key];
+            foreach(var accountTransaction in accountTransactions)
+            {
+                accountSum += accountTransaction.Value;
+                Console.WriteLine(accountTransaction.ToString());
+            }
+            
+            Console.WriteLine("Account Sum: " + accountSum);
+            Console.WriteLine("---");
+        }
+
 
     }
 
@@ -200,7 +237,7 @@ class Program
         public string Receiver;
         public string Subject;
         public string Description;
-        public Decimal Value;
+        public decimal Value;
 
         public override string ToString()
         {
@@ -232,6 +269,8 @@ class Program
         public string Category = "";
         public string Keyword = "";
         public string Operation = "";
+
+        public List<Transaction> Transactions = new();
 
         public ValueMapping(string category, string keyword, string operation)
         {
