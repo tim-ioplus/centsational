@@ -1,0 +1,12 @@
+datafilenames;TestData.csv;x
+datamapping;Date;0
+datamapping;Value;1
+datamapping;Subject;2
+datamapping;Receiver;3
+datamapping;Description;4
+valuemapping;Wohnen;Miete;Contains
+valuemapping;Wohnen;Strom;Contains
+valuemapping;Wohnen;Glasfaser;Contains
+valuemapping;Nahrung;Aldi;Contains
+valuemapping;Nahrung;Rewe;Contains
+valuemapping;Nahrung;Edeka;Contains
