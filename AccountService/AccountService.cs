@@ -61,13 +61,13 @@ public class AccountService
         return accountSum;
     }
 
-    public Config ReadConfiguration(string config_path)
+    public Config ReadConfiguration(string configfilePath)
     {
-        var configfilename = Path.GetFileName(config_path);
         Config? config = null;
-        if (!string.IsNullOrEmpty(configfilename))
+        if (File.Exists(configfilePath))
         {
-            config = new Config().FromPath(configfilename);
+            config = new Config(configfilePath);
+            config.ReadFromPath();
         }
         else
         {
@@ -92,7 +92,12 @@ public class AccountService
 
     public object ReadTransactions(Config config, string data_path)
     {
-        var dataFileName = Path.GetFileName(data_path);
+        var dataFileName = config.Datafilenames.FirstOrDefault();
+
+        if(!File.Exists(dataFileName))
+        {
+            throw new FileNotFoundException("Transaction Data File " + dataFileName + " not found.");
+        }
 
         var lines = File.ReadLines(dataFileName);
         int currentline = 0;

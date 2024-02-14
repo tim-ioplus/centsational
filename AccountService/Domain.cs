@@ -37,10 +37,9 @@ public class Config
         /// </summary>
         public bool Verbose;
 
-        public Config() { }
-        public Config(string path, bool verbose = true)
+        public Config(string configfilePath="", bool verbose = true)
         {
-            ConfigfilePath = path;
+            ConfigfilePath = configfilePath;
             Datafilenames = new List<string>();
             Datamappings = new Dictionary<string, DataMapping>();
             ValueMappings = new List<ValueMapping>();
@@ -55,12 +54,14 @@ public class Config
                     ValueMappings.Any();
         }
 
-        public Config FromPath(string path)
+        public void ReadFromPath()
         {
-            var c = new Config(path);
+            if(!File.Exists(this.ConfigfilePath))
+            {
+                throw new FileNotFoundException(string.Format("Path: {0} does not exist", this.ConfigfilePath));
+            }
 
-            var lines = File.ReadLines(path);
-            int currentline = 0;
+            var lines = File.ReadLines(this.ConfigfilePath);
             foreach (string line in lines)
             {
                 var splits = line.Split(';');
@@ -68,15 +69,14 @@ public class Config
 
                 if (linetopic.Equals("datafilenames"))
                 {
-                    c.Datafilenames = splits[1].Split(',').ToList();
-                    continue;
+                    this.Datafilenames = splits[1].Split(',').ToList();
                 }
                 else if (linetopic.Equals("datamapping"))
                 {
                     string property = splits[1];
                     string column = splits[2];
 
-                    Datamappings.Add(column, new DataMapping(property, column));
+                    this.Datamappings.Add(column, new DataMapping(property, column));
                 }
                 else if (linetopic.Equals("valuemapping"))
                 {
@@ -84,13 +84,9 @@ public class Config
                     string keyword = splits[2];
                     string operation = splits[3];
 
-                    ValueMappings.Add(new ValueMapping(category, keyword, operation));
+                    this.ValueMappings.Add(new ValueMapping(category, keyword, operation));
                 }
-
-                currentline++;
-            }
-
-            return c;
+            };
         }
     }
 
