@@ -75,8 +75,11 @@ public class Config
                 {
                     string property = splits[1];
                     string column = splits[2];
-
-                    this.Datamappings.Add(column, new DataMapping(property, column));
+                    
+                    if(int.TryParse(column, out int columnIndex))
+                    {
+                        this.Datamappings.Add(property, new DataMapping(property, columnIndex));
+                    }                    
                 }
                 else if (linetopic.Equals("valuemapping"))
                 {
@@ -108,17 +111,21 @@ public class Config
     public class DataMapping
     {
         // The property to be Mapped from datafile to Transaction
+        // To be filled on reading the config file
         public string Property;
-        // The Name of the column which contains the üroperties data 
-        public string ColumnName;
         // Index of the column which contains the properties data
+        // To be filled on reading the config file
         public int ColumnIndex;
 
-        public DataMapping(string property, string columnname, int columnindex = -1)
+        // The Name of the column which contains the properties data
+        // To be filled on reading the data file 
+        public string ColumnName;
+
+        public DataMapping(string property, int columnindex = -1, string columnname = "")
         {
             Property = property;
-            ColumnName = columnname;
             ColumnIndex = columnindex;
+            ColumnName = columnname;
         }
     }
 

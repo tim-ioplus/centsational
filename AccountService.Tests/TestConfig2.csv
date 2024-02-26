@@ -1,0 +1,8 @@
+datafilenames;TestData2.csv;x
+datamapping;Date;2
+datamapping;Value;0
+datamapping;Subject;1
+valuemapping;Mobility;Kfz Versicherung;Contains
+valuemapping;Mobility;Deutschlandticket;Contains
+valuemapping;Leisure;TV Sportenhausen;Contains
+valuemapping;Education;OGS Träger Sportenhausen;Contains

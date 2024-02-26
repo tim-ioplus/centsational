@@ -61,7 +61,7 @@ public class AccountService
         return accountSum;
     }
 
-    public Config ReadConfiguration(string configfilePath)
+    public Config? ReadConfiguration(string configfilePath)
     {
         Config? config = null;
         if (File.Exists(configfilePath))
@@ -71,14 +71,14 @@ public class AccountService
         }
         else
         {
-            Console.WriteLine("No Configuraiton found. exit.");
+            Console.WriteLine("No Configuration found. exit.");
             return null;
             // or maybe use some Default configuration?
         }
 
         if (config == null)
         {
-            Console.WriteLine("No configuraiton provided. exit.");
+            Console.WriteLine("No Configuration provided. exit.");
             return null;
         }
         if (!config.Validate())
