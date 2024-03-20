@@ -1,3 +1,4 @@
+using System;
 using System.Net.Sockets;
 using Account.Domain;
 
@@ -19,6 +20,18 @@ public class AccountTest
         Assert.True(!string.IsNullOrWhiteSpace(c.ConfigfilePath));
         Assert.True(c.Datamappings.Any());
         Assert.True(c.ValueMappings.Any());        
+    }
+
+    [Fact]
+    public void Test_SplitPath()
+    {
+        var filepath = "this/is/my/path/to/my.file";
+        
+        var filename = PathHelper.GetFileName(filepath);
+        Assert.Equal("my.file", filename);
+        
+        var dirpath = PathHelper.GetDirectoryPath(filepath);
+        Assert.Equal("this/is/my/path/to", dirpath);
     }
 
     [Fact]

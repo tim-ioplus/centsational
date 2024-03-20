@@ -1,6 +1,10 @@
 namespace Account.Domain;
 public class Config
     {
+        /// <summary>
+        /// Base for Config and Data files
+        /// </summary>
+        public string DirectoryPath = "";
         //
         // Path to Configfile 
         // eg home/user/Documents to find home/user/Documents/CENTSATIONAL_CONFIG.csv
@@ -40,10 +44,16 @@ public class Config
         public Config(string configfilePath="", bool verbose = true)
         {
             ConfigfilePath = configfilePath;
+            DirectoryPath = PathHelper.GetDirectoryPath(configfilePath);
             Datafilenames = new List<string>();
             Datamappings = new Dictionary<string, DataMapping>();
             ValueMappings = new List<ValueMapping>();
-            Verbose = true;
+            Verbose = verbose;
+
+            if(!string.IsNullOrWhiteSpace(ConfigfilePath) && File.Exists(ConfigfilePath))
+            {
+                ReadFromPath();
+            }
         }
 
         public bool Validate()
@@ -93,12 +103,31 @@ public class Config
         }
     }
 
+    public static class PathHelper
+    {
+        public static string GetDirectoryPath(string filepath)
+        {
+            var filename = GetFileName(filepath);
+            var dirpath = filepath.Replace("/"+filename,"");
+
+            return dirpath;
+        }
+
+        public static string GetFileName(string filepath)
+        {
+            var splitted = filepath.Split("/");
+            var filename = splitted[splitted.Length-1];
+
+            return filename;
+        }
+    }
+
     public class Transaction
     {
         public DateTime Date;
-        public string Receiver;
-        public string Subject;
-        public string Description;
+        public string Receiver = "";
+        public string Subject = "";
+        public string Description = "";
         public decimal Value;
 
         public override string ToString()
@@ -136,7 +165,7 @@ public class Config
         public string Keyword = "";
         public string Operation = "";
 
-        public List<Transaction> Transactions = new();
+        public List<Transaction> Transactions = [];
 
         public ValueMapping(string category, string keyword, string operation)
         {

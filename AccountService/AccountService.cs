@@ -10,7 +10,12 @@ public class AccountService
 
     public Dictionary<string, List<Transaction>> Accounts;
 
-    public AccountService(){}
+    public AccountService()
+    {
+        Configuration = new Config();
+        Transactions = [];
+        Accounts = [];
+    }
 
     /// <summary>
     /// Mapping the readed Transactions into account using the given ruleset
@@ -67,7 +72,6 @@ public class AccountService
         if (File.Exists(configfilePath))
         {
             config = new Config(configfilePath);
-            config.ReadFromPath();
         }
         else
         {
@@ -90,9 +94,9 @@ public class AccountService
         return config;
     }
 
-    public object ReadTransactions(Config config, string data_path)
+    public object ReadTransactions(Config config)
     {
-        var dataFileName = config.Datafilenames.FirstOrDefault();
+        var dataFileName = config.DirectoryPath + "/" + config.Datafilenames.FirstOrDefault();
 
         if(!File.Exists(dataFileName))
         {
@@ -111,13 +115,12 @@ public class AccountService
 
                 foreach (string columnname in columnnames)
                 {
-                    DataMapping dataMapping;
+                    DataMapping? dataMapping;
                     if (config.Datamappings.TryGetValue(columnname, out dataMapping))
                     {
                         dataMapping.ColumnIndex = columnIndex;
                         config.Datamappings[columnname] = dataMapping;
                     }
-
 
                     columnIndex++;
                 }
@@ -133,7 +136,6 @@ public class AccountService
                 transaction.Subject = (string) transactionData[config.Datamappings["subject"].ColumnIndex];
                 transaction.Receiver = (string) transactionData[config.Datamappings["receiver"].ColumnIndex];
                 transaction.Description = (string) transactionData[config.Datamappings["description"].ColumnIndex];
-
                 
                 Transactions.Add(transaction);
             }
