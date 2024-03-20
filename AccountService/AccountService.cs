@@ -131,12 +131,41 @@ public class AccountService
             {
                 var transaction = new Transaction();
                 var transactionData = line.Split(';');
-                transaction.Date = DateTime.Parse(transactionData[config.Datamappings["date"].ColumnIndex]);
-                transaction.Value = decimal.Parse(transactionData[config.Datamappings["value"].ColumnIndex]);
-                transaction.Subject = (string) transactionData[config.Datamappings["subject"].ColumnIndex];
-                transaction.Receiver = (string) transactionData[config.Datamappings["receiver"].ColumnIndex];
-                transaction.Description = (string) transactionData[config.Datamappings["description"].ColumnIndex];
+
+                if(config.Datamappings.TryGetValue("Date", out var dateMapping))
+                {
+                    if(DateTime.TryParse(transactionData[dateMapping.ColumnIndex], out var transactionDate))
+                    {
+                        transaction.Date = transactionDate;
+                    }
+                }
+
+                if(config.Datamappings.TryGetValue("Value", out var valueMapping))
+                {
+                    if(decimal.TryParse(transactionData[valueMapping.ColumnIndex], out decimal transactionValue))
+                    {
+                        transaction.Value = transactionValue;
+                    }
+                }
+
+                if(config.Datamappings.TryGetValue("Subject", out var subjectMapping))
+                {
+                    var transactionSubject = transactionData[subjectMapping.ColumnIndex]; 
+                    transaction.Subject = transactionSubject;
+                }
                 
+                if(config.Datamappings.TryGetValue("Receiver", out var receiverMapping))
+                {
+                    var transactionReceiver = transactionData[receiverMapping.ColumnIndex]; 
+                    transaction.Receiver = transactionReceiver;
+                }
+
+                if(config.Datamappings.TryGetValue("Description", out var descriptionMapping))
+                {
+                    var transactionSubject = transactionData[descriptionMapping.ColumnIndex]; 
+                    transaction.Description = transactionSubject;
+                }
+                                
                 Transactions.Add(transaction);
             }
         }
