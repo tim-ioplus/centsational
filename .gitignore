@@ -4,3 +4,7 @@ AccountService.Tests/bin/*
 AccountService.Tests/obj/*
 CentsationalConsole/bin/*
 CentsationalConsole/obj/*
+/.vs
+/Configuration/obj
+/Domain/bin
+/Domain/obj
