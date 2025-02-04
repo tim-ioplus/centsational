@@ -1,4 +1,4 @@
-namespace Domain;
+namespace CSDomain;
 
 public static class PathHelper
 {

@@ -26,3 +26,6 @@ CentsationalConsole/obj/*
 /VB_Finance_App/VBCentsationalApp/obj
 /CS_Finance_App/Domain/bin
 /CS_Finance_App/AccountService/bin
+/VB_Finance_App/VBData/obj
+/VB_Finance_App/VBDomain/bin
+/VB_Finance_App/VBDomain/obj

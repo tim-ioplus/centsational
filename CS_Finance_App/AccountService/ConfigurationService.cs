@@ -1,4 +1,4 @@
-﻿using Domain;
+﻿using CSDomain;
 
 namespace Services;
 public class ConfigurationService
